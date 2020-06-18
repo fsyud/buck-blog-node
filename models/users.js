@@ -2,15 +2,13 @@
  * User model module.
  * @file 权限和用户数据模型
  * @module model/user
- * @author biaochenxuying <https://github.com/biaochenxuying>
+ * @author singlebuck <https://github.com/singleBuck>
  */
 
 const crypto = require('crypto');
 const { argv } = require('yargs');
 const { mongoose } = require('../core/mongodb.js');
 const autoIncrement = require('mongoose-auto-increment');
-
-console.log('models')
 
 const adminSchema = new mongoose.Schema({
   // // 第三方授权登录的 oauth 表的 id

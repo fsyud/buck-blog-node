@@ -4,6 +4,7 @@ const User = require('../models/users');
 
 // 后台当前用户
 exports.currentUser = (req, res) => {
+  console.log('currentUser')
   let user = req.session.userInfo;
   if (user) {
     user.avatar = "http://p61te2jup.bkt.clouddn.com/WechatIMG8.jpeg";
@@ -115,4 +116,58 @@ exports.logout = (req, res) => {
   } else {
     responseClient(res, 200, 1, '您还没登录！！！');
   }
+};
+
+// 后台当前用户
+exports.queryUserList = (req, res) => {
+  let keyword = req.query.keyword || '';
+  let pageNum = parseInt(req.query.pageNum) || 1;
+  let pageSize = parseInt(req.query.pageSize) || 10;
+  let conditions = {};
+  if (keyword) {
+    const reg = new RegExp(keyword, 'i');
+    conditions = {
+      $or: [{ name: { $regex: reg } }, { email: { $regex: reg } }],
+    };
+  }
+  let skip = pageNum - 1 < 0 ? 0 : (pageNum - 1) * pageSize;
+  let responseData = {
+    count: 0,
+    list: [],
+  };
+
+  User.countDocuments({}, (err, count) => {
+    if(err) {
+      console.error('Error:' + err);
+    } else {
+      responseData.count = count;
+      // 待返回的字段
+      let fields = {
+        _id: 1,
+        email: 1,
+        name: 1,
+        avatar: 1,
+        phone: 1,
+        introduce: 1,
+        type: 1,
+        create_time: 1,
+      };
+
+      let options = {
+        skip: skip,
+        limit: pageSize,
+        sort: { create_time: -1 },
+      };
+
+      User.find(conditions, fields, options, (error, result) => {
+        if (err) {
+          console.error('Error:' + error);
+          // throw error;
+        } else {
+          responseData.list = result;
+          responseClient(res, 200, 0, 'success', responseData);
+        }
+      });
+    }
+  })
 };
