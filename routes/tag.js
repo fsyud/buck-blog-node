@@ -34,7 +34,6 @@ exports.addTag = (req, res) => {
 
 // 获取全部标签
 exports.queryTagList = (req, res) => {
-  console.log('queryTagList')
   let keyword = req.query.keyword || null;
   let pageNum = parseInt(req.query.pageNum) || 1;
   let pageSize = parseInt(req.query.pageSize) || 10;
@@ -56,7 +55,7 @@ exports.queryTagList = (req, res) => {
     list: [],
   };
 
-  Tag.countDocuments(conditions, (err, count) => {
+  Tag.countDocuments({}, (err, count) => {
     if (err) {
       console.error('Error:' + err);
     } else {
@@ -90,3 +89,19 @@ exports.queryTagList = (req, res) => {
     }
   })
 }
+
+// 删除标签
+exports.delTag = (req, res) => {
+  let { id } = req.body;
+  Tag.deleteMany({ _id: id })
+    .then(result => {
+      if (result.n === 1) {
+        responseClient(res, 200, 0, '删除成功!');
+      } else {
+        responseClient(res, 200, 1, '标签不存在');
+      }
+    })
+    .catch(err => {
+      responseClient(res);
+    });
+};

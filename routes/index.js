@@ -16,5 +16,6 @@ module.exports = app => {
   app.post('/addTimeLine', timeLine.addTimeLine);
 
   app.post('/addTag', tag.addTag)
+  app.post('/delTag', tag.delTag)
   app.get('/queryTagList', tag.queryTagList)
 }
