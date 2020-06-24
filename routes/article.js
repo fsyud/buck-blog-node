@@ -1,0 +1,216 @@
+import Article from "../models/article";
+import User from "../models/users";
+
+import { responseClient, timestampToTime } from "../util/util";
+
+exports.addArticle = (req, res) => {
+  console.log("addArticle");
+  const {
+    title,
+    author,
+    keyword,
+    content,
+    desc,
+    img_url,
+    tags,
+    category,
+    state,
+    type,
+    origin
+  } = req.body;
+
+  let tempArticle = null;
+
+  let info = {
+    title,
+    author,
+    keyword: keyword ? keyword.split(",") : [],
+    content,
+    numbers: content.length,
+    desc,
+    tags: tags ? tags.split(",") : [],
+    category: category ? category.split(",") : [],
+    state,
+    type,
+    origin
+  };
+
+  if (img_url) {
+    tempArticle = new Article(Object.assign(info, { img_url }));
+  } else tempArticle = new Article(info);
+
+  tempArticle
+    .save()
+    .then(data => {
+      // let article = JSON.parse(JSON.stringify(data));
+      // console.log('article :', article);
+      // article.create_time = timestampToTime(article.create_time);
+      // article.update_time = timestampToTime(article.update_time);
+      // console.log('timestampToTime :', timestampToTime(data.create_time));
+      responseClient(res, 200, 0, "保存成功", data);
+    })
+    .catch(err => {
+      console.log(err);
+      responseClient(res);
+    });
+};
+
+exports.delArticle = (req, res) => {
+  let { id } = req.body;
+  Article.deleteMany({ _id: id })
+    .then(result => {
+      if (result.n === 1) {
+        responseClient(res, 200, 0, "删除成功!");
+      } else {
+        responseClient(res, 200, 1, "文章不存在");
+      }
+    })
+    .catch(err => {
+      console.error("err :", err);
+      responseClient(res);
+    });
+};
+
+// 前台文章列表
+exports.queryArticleList = (req, res) => {
+  let keyword = req.query.keyword || null;
+  let state = req.query.state || "";
+  let likes = req.query.likes || "";
+  let tag_id = req.query.tag_id || "";
+  let category_id = req.query.category_id || "";
+  let article = req.query.article || "";
+  let pageNum = parseInt(req.query.pageNum) || 1;
+  let pageSize = parseInt(req.query.pageSize) || 10;
+
+  // 如果是文章归档 返回全部文章
+  if (article) {
+    pageSize = 1000;
+  }
+
+  let conditions = {};
+
+  if (!state) {
+    if (keyword) {
+      const reg = new RegExp(keyword, "i"); //不区分大小写
+      conditions = {
+        $or: [{ title: { $regex: reg } }, { desc: { $regex: reg } }]
+      };
+    }
+  } else if (stata) {
+    state = Number(state)
+
+    if(keyword) {
+      const reg = new RegExp(keyword, 'i')
+
+      conditions = {
+        $and: [
+          { $or: [{ state: state }] },
+          {
+            $or: [
+              { title: { $regex: reg } },
+              { desc: { $regex: reg } },
+              { keyword: { $regex: reg } },
+            ],
+          },
+        ],
+      };
+    } else {
+      conditions = { state };
+    }
+  }
+
+  let skip = pageNum - 1 < 0 ? 0 : (pageNum - 1) * pageSize;  
+
+  let responseData = {
+    count: 0,
+    list: [],
+  };
+
+  Article.countDocuments({}, (err, count) => {
+    if (err) {
+      console.log('Error:' + err);
+    } else {
+      responseData.count = count;
+
+      // 待返回字段
+      let fields = {
+        title: 1,
+        desc: 1,
+        img_url: 1,
+        tags: 1,
+        category: 1,
+        meta: 1,
+        create_time: 1,
+      };
+
+      if(article) {
+        fields = {
+          title: 1,
+          create_time: 1,
+        };
+      }
+
+      let options = {
+        skip: skip,
+        limit: pageSize,
+        sort: { create_time: -1 },
+      }
+
+      Article.find(conditions, fields, options, (err, result) => {
+        if (err) {
+          console.error('Error:' + error);
+        } else {
+          let newList = [];
+
+          if(likes) {
+            // 根据热度 likes 返回数据
+            result.sort((a, b) => {
+              return b.meta.likes - a.meta.likes;
+            });
+            responseData.list = result;
+          } else if (category_id) {
+            // console.log('category_id :', category_id);
+            // 根据 分类 id 返回数据
+            result.forEach(item => {
+              if (item.category.includes(category_id)) {
+                newList.push(item);
+              }
+            });
+            let len = newList.length;
+            responseData.count = len;
+            responseData.list = newList;
+          } else if(article) {
+            const archiveList = []
+            let obj = {}
+            // 按年份归档 文章数组
+            result.forEach(item => {
+              let year = item.create_time.getFullYear()
+              if(!obj[year]){
+                obj[year] = []
+                obj[year].push(item)
+              } else {
+                obj[year].push(e)
+              }
+            })
+            for (const key in obj) {
+              if (obj.hasOwnProperty(key)) {
+                const element = obj[key];
+                let item = {}
+                item.year = key
+                item.list = element
+                archiveList.push(item)
+              }
+            }
+            archiveList.sort((a, b) => {
+              return b.year - a.year;
+            });
+            responseData.list = archiveList;
+          } else {
+            responseData.list = result;
+          }
+          responseClient(res, 200, 0, '操作成功！', responseData);
+        }
+      })
+    }
+  })
+};

@@ -91,8 +91,6 @@ exports.addTimeLine = (req, res) => {
           end_time
         });
 
-        console.log("save time line");
-
         timeLine
           .save()
           .then(data => {
