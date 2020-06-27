@@ -214,3 +214,109 @@ exports.queryArticleList = (req, res) => {
     }
   })
 };
+
+// 文章详情
+exports.queryArticleDetail = (req, res) => {
+  let { id } = req.body;
+  let type = Number(req.body.type) || 1; //文章类型 => 1: 普通文章，2: 简历，3: 管理员介绍
+  let filter = Number(req.body.filter) || 1; //文章的评论过滤 => 1: 过滤，2: 不过滤
+
+  if(type === 1) {
+    if (!id) {
+      responseClient(res, 200, 1, '文章不存在 ！');
+      return;
+    }
+
+    Article.findOne({_id: id}, (error, data) => {
+      if(error) {
+        console.log('error' + error)
+      } else {
+        data.meta.views = data.meta.views + 1;
+
+        Article.updateOne({_id: id}, { meta: data.meta })
+          .then(result => {
+            if (filter === 1) {
+              console.log(data)
+              const arr = data.comments;
+
+              for(let i = arr.length - 1; i >=0; i--) {
+                const e = arr[i];
+                if (e.state !== 1) {
+                  arr.splice(i, 1);
+                }
+                const newArr = e.other_comments;
+                const length = newArr.length;
+
+                if (length) {
+                  for (let j = length - 1; j >= 0; j--) {
+                    const item = newArr[j];
+                    if (item.state !== 1) {
+                      newArr.splice(j, 1);
+                    }
+                  }
+                }
+              }
+            }
+            responseClient(res, 200, 0, '操作成功 ！', data);
+          })
+          .catch(err => {
+            console.error('err :', err);
+            throw err;
+          });
+      }
+    })
+    .populate([{ path: 'tags' }, { path: 'category' }, { path: 'comments' }])
+      .exec((err, doc) => {
+        // console.log("doc:");          // aikin
+        // console.log("doc.tags:",doc.tags);          // aikin
+        // console.log("doc.category:",doc.category);           // undefined
+      });
+  } else {
+    Article.findOne({ type: type }, (Error, data) => {
+      if (Error) {
+        console.log('Error:' + Error);
+        // throw error;
+      } else {
+        if (data) {
+          data.meta.views = data.meta.views + 1;
+          Article.updateOne({ type: type }, { meta: data.meta })
+            .then(result => {
+              if (filter === 1) {
+                const arr = data.comments;
+                for (let i = arr.length - 1; i >= 0; i--) {
+                  const e = arr[i];
+                  if (e.state !== 1) {
+                    arr.splice(i, 1);
+                  }
+                  const newArr = e.other_comments;
+                  const length = newArr.length;
+                  if (length) {
+                    for (let j = length - 1; j >= 0; j--) {
+                      const item = newArr[j];
+                      if (item.state !== 1) {
+                        newArr.splice(j, 1);
+                      }
+                    }
+                  }
+                }
+              }
+              responseClient(res, 200, 0, '操作成功 ！', data);
+            })
+            .catch(err => {
+              console.error('err :', err);
+              throw err;
+            });
+        } else {
+          responseClient(res, 200, 1, '文章不存在 ！');
+          return;
+        }
+      }
+    })
+      .populate([{ path: 'tags' }, { path: 'category' }, { path: 'comments' }])
+      .exec((err, doc) => {
+        // console.log("doc:");          // aikin
+        // console.log("doc.tags:",doc.tags);          // aikin
+        // console.log("doc.category:",doc.category);           // undefined
+      });
+  }
+}

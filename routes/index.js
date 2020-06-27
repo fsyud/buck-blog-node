@@ -27,5 +27,6 @@ module.exports = app => {
   app.post('/addArticle', article.addArticle);
   app.post('/delArticle', article.delArticle);
   app.get('/queryArticleList', article.queryArticleList);
+  app.post('/queryArticleDetail', article.queryArticleDetail);
 
 }
