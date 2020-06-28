@@ -179,6 +179,17 @@ exports.queryArticleList = (req, res) => {
             let len = newList.length;
             responseData.count = len;
             responseData.list = newList;
+          } else if (tag_id) {
+            // console.log('tag_id :', tag_id);
+            // 根据标签 id 返回数据
+            result.forEach(item => {
+              if (item.tags.indexOf(tag_id) > -1) {
+                newList.push(item);
+              }
+            });
+            let len = newList.length;
+            responseData.count = len;
+            responseData.list = newList;
           } else if(article) {
             const archiveList = []
             let obj = {}
@@ -220,33 +231,30 @@ exports.queryArticleDetail = (req, res) => {
   let { id } = req.body;
   let type = Number(req.body.type) || 1; //文章类型 => 1: 普通文章，2: 简历，3: 管理员介绍
   let filter = Number(req.body.filter) || 1; //文章的评论过滤 => 1: 过滤，2: 不过滤
-
-  if(type === 1) {
+  console.log('type:', type);
+  if (type === 1) {
     if (!id) {
       responseClient(res, 200, 1, '文章不存在 ！');
       return;
     }
-
-    Article.findOne({_id: id}, (error, data) => {
-      if(error) {
-        console.log('error' + error)
+    Article.findOne({ _id: id }, (Error, data) => {
+      if (Error) {
+        console.error('Error:' + Error);
+        // throw error;
       } else {
         data.meta.views = data.meta.views + 1;
-
-        Article.updateOne({_id: id}, { meta: data.meta })
+        Article.updateOne({ _id: id }, { meta: data.meta })
           .then(result => {
+            // console.log('data:',data)
             if (filter === 1) {
-              console.log(data)
               const arr = data.comments;
-
-              for(let i = arr.length - 1; i >=0; i--) {
+              for (let i = arr.length - 1; i >= 0; i--) {
                 const e = arr[i];
                 if (e.state !== 1) {
                   arr.splice(i, 1);
                 }
                 const newArr = e.other_comments;
                 const length = newArr.length;
-
                 if (length) {
                   for (let j = length - 1; j >= 0; j--) {
                     const item = newArr[j];
@@ -257,6 +265,7 @@ exports.queryArticleDetail = (req, res) => {
                 }
               }
             }
+
             responseClient(res, 200, 0, '操作成功 ！', data);
           })
           .catch(err => {
@@ -265,7 +274,7 @@ exports.queryArticleDetail = (req, res) => {
           });
       }
     })
-    .populate([{ path: 'tags' }, { path: 'category' }, { path: 'comments' }])
+      .populate([{ path: 'Tag' }, { path: 'Comment' }, { path: 'Category' }])
       .exec((err, doc) => {
         // console.log("doc:");          // aikin
         // console.log("doc.tags:",doc.tags);          // aikin
