@@ -248,24 +248,26 @@ exports.queryArticleDetail = (req, res) => {
             // console.log('data:',data)
             if (filter === 1) {
               const arr = data.comments;
+              console.log(arr)
               for (let i = arr.length - 1; i >= 0; i--) {
                 const e = arr[i];
                 if (e.state !== 1) {
                   arr.splice(i, 1);
                 }
-                const newArr = e.other_comments;
-                const length = newArr.length;
-                if (length) {
-                  for (let j = length - 1; j >= 0; j--) {
-                    const item = newArr[j];
-                    if (item.state !== 1) {
-                      newArr.splice(j, 1);
-                    }
-                  }
-                }
+
+                console.log(e)
+                // const newArr = e.other_comments;
+                // const length = newArr.length;
+                // if (length) {
+                //   for (let j = length - 1; j >= 0; j--) {
+                //     const item = newArr[j];
+                //     if (item.state !== 1) {
+                //       newArr.splice(j, 1);
+                //     }
+                //   }
+                // }
               }
             }
-
             responseClient(res, 200, 0, '操作成功 ！', data);
           })
           .catch(err => {
@@ -274,7 +276,7 @@ exports.queryArticleDetail = (req, res) => {
           });
       }
     })
-      .populate([{ path: 'Tag' }, { path: 'Comment' }, { path: 'Category' }])
+      .populate([{ path: 'tags' }, { path: 'comments' }, { path: 'Category' }])
       .exec((err, doc) => {
         // console.log("doc:");          // aikin
         // console.log("doc.tags:",doc.tags);          // aikin

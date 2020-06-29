@@ -96,6 +96,7 @@ exports.login = (req, res) => {
       if (userInfo) {
         //登录成功后设置session
         req.session.userInfo = userInfo;
+        console.log(req.session)
         console.log(userInfo)
         responseClient(res, 200, 0, '登录成功', userInfo);
       } else {
@@ -118,7 +119,7 @@ exports.logout = (req, res) => {
   }
 };
 
-// 后台当前用户
+// 后台用户列表
 exports.queryUserList = (req, res) => {
   let keyword = req.query.keyword || '';
   let pageNum = parseInt(req.query.pageNum) || 1;

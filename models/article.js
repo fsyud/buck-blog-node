@@ -42,6 +42,7 @@ const articleSchema = new mongoose.Schema({
 	// 文章标签
 	tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag', required: true }],
 
+  // 文章评论
 	comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment', required: true }],
 
 	// 文章分类

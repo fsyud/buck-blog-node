@@ -2,12 +2,13 @@
 *所有的路由接口
 */
 const [
-  user, timeLine, tag, article
+  user, timeLine, tag, article, comment
 ] = [
   require('./users'),
   require('./timeLine'),
   require('./tag'),
-  require('./article')
+  require('./article'),
+  require('./comment'),
 ]
 
 module.exports = app => {
@@ -28,5 +29,7 @@ module.exports = app => {
   app.post('/delArticle', article.delArticle);
   app.get('/queryArticleList', article.queryArticleList);
   app.post('/queryArticleDetail', article.queryArticleDetail);
+
+  app.post('/addComment', comment.addComment)
 
 }
