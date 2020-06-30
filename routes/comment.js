@@ -8,17 +8,20 @@ exports.queryCommentsList = (req, res) => {};
 
 // 添加一级评论
 exports.addComment = (req, res) => {
-  console.log(req.session)
-  if (!req.session.userInfo) {
+  let { article_id, user_id, content, hasUserInfo } = req.body;
+
+  console.log(req.session.userInfo)
+
+  if (!hasUserInfo && !req.session.userInfo) {
     responseClient(res, 200, 1, "您还没登录,或者登录信息已过期，请重新登录！");
     return;
   }
 
-  let { article_id, user_id, content } = req.body;
-
-  if(!user_id) responseClient(res, 200, 1, "用户id不能为空");
+  if(!user_id) responseClient(res, 200, 1, "您还没登录,或者登录信息已过期，请重新登录！");
 
   if(!article_id) responseClient(res, 200, 1, "文章id不能为空");
+
+  if(!content) responseClient(res, 200, 1, "请输入留言内容！");
 
   User.findById({
     _id: user_id
@@ -51,7 +54,7 @@ exports.addComment = (req, res) => {
               {comments: data.comments, meta: data.meta, is_handle: 0}
             )
               .then(result => {
-                responseClient(res, 200, 0, '操作成功 ！', commentResult);
+                responseClient(res, 200, 0, '留言成功 ！', commentResult);
               })
               .catch(err => {
                 console.error('err :', err);
