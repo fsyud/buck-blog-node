@@ -31,5 +31,6 @@ module.exports = app => {
   app.post('/queryArticleDetail', article.queryArticleDetail);
 
   app.post('/addComment', comment.addComment)
+  app.post('/addThirdComment', comment.addThirdComment)
 
 }

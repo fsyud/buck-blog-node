@@ -10,18 +10,22 @@ exports.queryCommentsList = (req, res) => {};
 exports.addComment = (req, res) => {
   let { article_id, user_id, content, hasUserInfo } = req.body;
 
-  console.log(req.session.userInfo)
-
   if (!hasUserInfo && !req.session.userInfo) {
     responseClient(res, 200, 1, "您还没登录,或者登录信息已过期，请重新登录！");
     return;
   }
 
-  if(!user_id) responseClient(res, 200, 1, "您还没登录,或者登录信息已过期，请重新登录！");
+  if(!user_id) {
+    responseClient(res, 200, 1, "您还没登录,或者登录信息已过期，请重新登录！");
+  }
 
-  if(!article_id) responseClient(res, 200, 1, "文章id不能为空");
+  if(!article_id){
+    responseClient(res, 200, 1, "文章id不能为空");
+  }
 
-  if(!content) responseClient(res, 200, 1, "请输入留言内容！");
+  if(!content) {
+    responseClient(res, 200, 1, "请输入留言内容！");
+  }
 
   User.findById({
     _id: user_id
@@ -76,3 +80,92 @@ exports.addComment = (req, res) => {
     responseClient(res);
   });
 };
+
+// 添加第三者评论
+exports.addThirdComment = (req, res) => { 
+  let {
+    article_id,
+    comment_id,
+    user_id,
+    content,
+    to_user,
+    hasUserInfo
+  } = req.body;
+
+  if (!hasUserInfo && !req.session.userInfo || user_id.length === 0) {
+    responseClient(res, 200, 1, "您还没登录,或者登录信息已过期，请重新登录！");
+    return;
+  }
+
+  Comment.findById({
+    _id: comment_id,
+  })
+    .then(commentResult => {
+      User.findById({
+        _id: user_id
+      })
+        .then(userResult => {
+          if (userResult) {
+            let userInfo = {
+              user_id: userResult._id,
+              name: userResult.name,
+              type: userResult.type,
+              avatar: userResult.avatar,
+            };
+
+            console.log(to_user)
+            let item = {
+              user: userInfo,
+              content: content,
+              to_user: JSON.parse(to_user),
+            }
+
+            commentResult.other_comments.push(item)
+
+            Comment.updateOne(
+              { _id: comment_id },
+              {
+                other_comments: commentResult.other_comments,
+                is_handle: 2,
+              },
+            )
+              .then(result => {
+                Article.findOne({ _id: article_id}, (erros, data) =>{
+                  if(erros) {
+                    console.error('Error:' + errors);
+                  } else {
+                    data.meta.comments = data.meta.comments + 1;
+                    Article.updateOne({ _id: article_id }, { meta: data.meta })
+                      .then(Articleresult => {
+                        responseClient(
+                          res,
+                          200,
+                          0,
+                          "操作成功 ！",
+                          data.meta.comments
+                        );
+                      })
+                      .catch (articleUpdateError => {
+                        throw articleUpdateError;
+                      })
+                  }
+                })
+              })
+              .catch (CommentError => {
+                console.error('CommentError:', CommentError);
+                responseClient(res);
+              })
+          } else {
+            responseClient(res, 200, 1, '用户不存在');
+          }
+        })
+        .catch(usererror => {
+          console.error('usererror :', usererror);
+          responseClient(res);
+        })
+    })
+    .catch(FirstCommentError => {
+      console.error('FirstCommentError :', FirstCommentError);
+      responseClient(res);
+    })
+}
