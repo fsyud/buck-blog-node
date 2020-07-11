@@ -4,7 +4,6 @@ import User from "../models/users";
 import { responseClient, timestampToTime } from "../util/util";
 
 exports.addArticle = (req, res) => {
-  console.log("addArticle");
   const {
     title,
     author,
@@ -34,6 +33,25 @@ exports.addArticle = (req, res) => {
     type,
     origin
   };
+
+  if(!title || title.length === 0) {
+    responseClient(res, 200, 1, "标题能为空！");
+    return
+  } 
+  if(!author || author.length === 0 ){
+    responseClient(res, 200, 1, "作者能为空！");
+    return
+  }
+
+  if(!tags || tags.length === 0) {
+    responseClient(res, 200, 1, '标签不能为空！');
+    return
+  }
+
+  if(!content || content.length === 0) {
+    responseClient(res, 200, 1, '内容不能为空！');
+    return
+  }
 
   if (img_url) {
     tempArticle = new Article(Object.assign(info, { img_url }));

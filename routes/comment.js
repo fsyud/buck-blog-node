@@ -58,7 +58,7 @@ exports.addComment = (req, res) => {
               {comments: data.comments, meta: data.meta, is_handle: 0}
             )
               .then(result => {
-                responseClient(res, 200, 0, '留言成功 ！', commentResult);
+                responseClient(res, 200, 0, '感谢您的留言！', commentResult);
               })
               .catch(err => {
                 console.error('err :', err);
@@ -141,7 +141,7 @@ exports.addThirdComment = (req, res) => {
                           res,
                           200,
                           0,
-                          "操作成功 ！",
+                          "回复留言成功！",
                           data.meta.comments
                         );
                       })

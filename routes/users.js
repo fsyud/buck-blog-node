@@ -97,10 +97,9 @@ exports.login = (req, res) => {
         //登录成功后设置session
         req.session.userInfo = userInfo;
         console.log(req.session)
-        console.log(userInfo)
         responseClient(res, 200, 0, '登录成功', userInfo);
       } else {
-        responseClient(res, 400, 1, '用户名或者密码错误');
+        responseClient(res, 200, 1, '用户名或者密码错误');
       }
     })
     .catch(err => {
@@ -171,4 +170,20 @@ exports.queryUserList = (req, res) => {
       });
     }
   })
+};
+
+
+exports.delUser = (req, res) => {
+  let { id } = req.body;
+  User.deleteMany({ _id: id })
+    .then(result => {
+      if (result.n === 1) {
+        responseClient(res, 200, 0, '用户删除成功!');
+      } else {
+        responseClient(res, 200, 1, '用户不存在');
+      }
+    })
+    .catch(err => {
+      responseClient(res);
+    });
 };

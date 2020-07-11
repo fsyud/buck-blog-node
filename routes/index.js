@@ -2,13 +2,19 @@
 *所有的路由接口
 */
 const [
-  user, timeLine, tag, article, comment
+  user,
+  timeLine,
+  tag,
+  article,
+  comment,
+  project
 ] = [
   require('./users'),
   require('./timeLine'),
   require('./tag'),
   require('./article'),
   require('./comment'),
+  require('./project')
 ]
 
 module.exports = app => {
@@ -17,6 +23,7 @@ module.exports = app => {
   app.post('/login', user.login);
   app.post('/logout', user.logout);
   app.get('/queryUserList', user.queryUserList);
+  app.post('/delUser', user.delUser);
 
   app.get('/queryTimeLine', timeLine.queryTimeLine);
   app.post('/addTimeLine', timeLine.addTimeLine);
@@ -33,4 +40,9 @@ module.exports = app => {
   app.post('/addComment', comment.addComment)
   app.post('/addThirdComment', comment.addThirdComment)
 
+  app.get('/queryProjectList', project.queryProjectList)
+  app.post('/addProject', project.addProject)
+  app.post('/updateProject', project.updateProject)
+  app.get('/delProject', project.delProject)
+  app.post('/getProjectDetail', project.getProjectDetail)
 }
