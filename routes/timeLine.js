@@ -107,3 +107,45 @@ exports.addTimeLine = (req, res) => {
       responseClient(res);
     });
 };
+
+
+exports.updateTimeTimeline = (req, res) => {
+  let { id, title, state, content, start_time, end_time } = req.body;
+
+  TimeLine.updateOne(
+    { _id: id },
+    {
+      title,
+      state: Number(state),
+      content,
+      start_time,
+      end_time,
+      update_time: new Date(),
+    },
+  )
+    .then(result => {
+      // console.log(result);
+      responseClient(res, 200, 0, '操作成功', result);
+    })
+    .catch(err => {
+      console.error('err:', err);
+      responseClient(res);
+    });
+};
+
+exports.delTimeline = (req, res) => {
+  let { id } = req.body;
+  TimeLine.deleteMany({ _id: id })
+    .then(result => {
+      // console.log('result :', result)
+      if (result.n === 1) {
+        responseClient(res, 200, 0, '操作成功!');
+      } else {
+        responseClient(res, 200, 1, '时间轴内容不存在');
+      }
+    })
+    .catch(err => {
+      console.error('err :', err);
+      responseClient(res);
+    });
+};

@@ -21,15 +21,18 @@ exports.queryProjectList = (req, res) => {
         ]
       };
     } else if (state) {
-      state = Number(state);
-      conditions = {
-        $and: [
-          { $or: [{ state: state }] },
-          { $or: [{ title: { $regex: reg } }, { content: { $regex: reg } }] }
-        ]
-      };
-    } else {
-      conditions = { state };
+        state = parseInt(state);
+        if (keyword) {
+          const reg = new RegExp(keyword, 'i');
+          conditions = {
+            $and: [
+              { $or: [{ state: state }] },
+              { $or: [{ title: { $regex: reg } }, { content: { $regex: reg } }] },
+            ],
+          };
+        } else {
+          conditions = { state };
+        }
     }
   }
 
@@ -50,7 +53,7 @@ exports.queryProjectList = (req, res) => {
         content: 1,
         img: 1,
         url: 1,
-        // state: 1,
+        state: 1,
         start_time: 1,
         end_time: 1
         // update_time: 1,
@@ -67,6 +70,7 @@ exports.queryProjectList = (req, res) => {
           console.error("Error:" + error);
           // throw error;
         } else {
+          console.log(result)
           responseData.list = result;
           responseClient(res, 200, 0, "操作成功！", responseData);
         }
@@ -93,7 +97,7 @@ exports.addProject = (req, res) => {
           end_time
         });
 
-        Project.save()
+        project.save()
           .then(data => {
             responseClient(res, 200, 0, "操作成功！", data);
           })
@@ -164,5 +168,5 @@ exports.getProjectDetail = (req, res) => {
     .catch(err => {
       console.error("err :", err);
       responseClient(res);
-    });
-};
+    })
+}

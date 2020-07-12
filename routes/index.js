@@ -27,6 +27,8 @@ module.exports = app => {
 
   app.get('/queryTimeLine', timeLine.queryTimeLine);
   app.post('/addTimeLine', timeLine.addTimeLine);
+  app.post('/updateTimeTimeline', timeLine.updateTimeTimeline);
+  app.post('/delTimeline', timeLine.delTimeline);
 
   app.post('/addTag', tag.addTag);
   app.post('/delTag', tag.delTag);
@@ -34,6 +36,9 @@ module.exports = app => {
 
   app.post('/addArticle', article.addArticle);
   app.post('/delArticle', article.delArticle);
+  app.post('/updateArticle', article.updateArticle);
+  app.post('/likeArticle', article.likeArticle);
+
   app.get('/queryArticleList', article.queryArticleList);
   app.post('/queryArticleDetail', article.queryArticleDetail);
 
@@ -43,6 +48,6 @@ module.exports = app => {
   app.get('/queryProjectList', project.queryProjectList)
   app.post('/addProject', project.addProject)
   app.post('/updateProject', project.updateProject)
-  app.get('/delProject', project.delProject)
+  app.post('/delProject', project.delProject)
   app.post('/getProjectDetail', project.getProjectDetail)
 }
