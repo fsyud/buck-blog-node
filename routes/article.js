@@ -103,7 +103,6 @@ exports.updateArticle = (req, res) => {
     desc,
     img_url,
     tags,
-    category,
     state,
     type,
     origin,
@@ -143,6 +142,7 @@ exports.likeArticle = (req, res) => {
   Article.findOne({ _id: id })
     .then(data => {
       let fields = {};
+      console.log(data.meta)
       data.meta.likes = data.meta.likes + 1;
       fields.meta = data.meta;
       let like_users_arr = data.like_users.length ? data.like_users : [];
@@ -159,7 +159,7 @@ exports.likeArticle = (req, res) => {
           fields.like_users = like_users_arr;
           Article.update({ _id: id }, fields)
             .then(result => {
-              responseClient(res, 200, 0, '操作成功！', result);
+              responseClient(res, 200, 0, '点赞成功👍 ！', result);
             })
             .catch(err => {
               console.error('err :', err);

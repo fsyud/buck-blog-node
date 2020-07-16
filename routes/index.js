@@ -7,14 +7,16 @@ const [
   tag,
   article,
   comment,
-  project
+  project,
+  message,
 ] = [
   require('./users'),
   require('./timeLine'),
   require('./tag'),
   require('./article'),
   require('./comment'),
-  require('./project')
+  require('./project'),
+  require('./message')
 ]
 
 module.exports = app => {
@@ -44,10 +46,19 @@ module.exports = app => {
 
   app.post('/addComment', comment.addComment)
   app.post('/addThirdComment', comment.addThirdComment)
+  app.get('/queryCommentsList', comment.queryCommentsList)
+  app.post('/changeStairComment', comment.changeStairComment)
+  app.post('/changeThirdComment', comment.changeThirdComment)
+  app.post('/delComment', comment.delComment)
 
   app.get('/queryProjectList', project.queryProjectList)
   app.post('/addProject', project.addProject)
   app.post('/updateProject', project.updateProject)
   app.post('/delProject', project.delProject)
   app.post('/getProjectDetail', project.getProjectDetail)
+
+  app.post('/addMessage', message.addMessage)
+  app.get('/queryMessageList', message.queryMessageList)
+  app.post('/delMessage', message.delMessage)
+  app.post('/addReplyMessage', message.addReplyMessage)
 }

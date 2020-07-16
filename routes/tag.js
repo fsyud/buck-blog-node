@@ -64,7 +64,7 @@ exports.queryTagList = (req, res) => {
       let fields = {
 				_id: 1,
         name: 1,
-        // desc: 1,
+        desc: 1,
         // icon: 1,
         // create_time: 1,
         // update_time: 1,
