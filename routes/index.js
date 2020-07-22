@@ -58,7 +58,7 @@ module.exports = app => {
   app.post('/getProjectDetail', project.getProjectDetail)
 
   app.post('/addMessage', message.addMessage)
+  app.post('/addThirdMessage', message.addThirdMessage)
   app.get('/queryMessageList', message.queryMessageList)
   app.post('/delMessage', message.delMessage)
-  app.post('/addReplyMessage', message.addReplyMessage)
 }

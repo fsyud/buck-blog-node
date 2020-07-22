@@ -66,7 +66,7 @@ exports.queryMessageList = (req, res) => {
         content: 1,
         email: 1,
         state: 1,
-        reply_list: 1,
+        other_comments: 1,
         create_time: 1
         // update_time: 1,
       };
@@ -88,8 +88,13 @@ exports.queryMessageList = (req, res) => {
   });
 };
 
-// 添加留言
+// 添加1级留言
 exports.addMessage = (req, res) => {
+  if (!req.session.userInfo) {
+    responseClient(res, 200, 1, "您还没登录,或者登录信息已过期，请重新登录！");
+    return;
+  }
+
   let { user_id, content, email, phone, name } = req.body;
 
   if (user_id) {
@@ -105,13 +110,14 @@ exports.addMessage = (req, res) => {
             phone: result.phone,
             introduce: result.introduce,
             content: content,
-            email: email ? email : result.email
+            email: email ? email : result.email,
+            state: 0
           });
 
           message
             .save()
             .then(data => {
-              responseClient(res, 200, 0, "添加成功", data);
+              responseClient(res, 200, 0, "添加成功，等待管理员审核！", data);
             })
             .catch(err => {
               console.error("err :", err);
@@ -129,12 +135,13 @@ exports.addMessage = (req, res) => {
       name: name,
       phone: phone,
       content: content,
-      email: email
+      email: email,
+      state: 0
     });
     message
       .save()
       .then(data => {
-        responseClient(res, 200, 0, "添加成功", data);
+        responseClient(res, 200, 0, "添加成功，等待管理员审核！", data);
       })
       .catch(err2 => {
         console.error("err 2:", err2);
@@ -142,6 +149,69 @@ exports.addMessage = (req, res) => {
       });
   }
 };
+
+// 添加三级留言
+exports.addThirdMessage = (req, res) => {
+  const {
+    comment_id,
+    user_id,
+    content,
+    to_user
+  } = req.body;
+
+  Message.findById({_id: comment_id})
+    .then(commentResult => {
+      User.findById({
+        _id: user_id
+      })
+        .then(userResult => {
+          let userInfo = {
+            user_id: userResult._id,
+            name: userResult.name,
+            type: userResult.type,
+            avatar: userResult.avatar,
+          };
+
+          let item = {
+            user: userInfo,
+            content: content,
+            to_user: JSON.parse(to_user),
+          }
+          
+          commentResult.other_comments.push(item)
+
+          console.log(commentResult)
+
+          Message.updateOne(
+            { _id: comment_id },
+            {
+              other_comments: commentResult.other_comments,
+              state: 0,
+            },
+          ).then(result => {
+            console.log(result)
+            responseClient(
+              res,
+              200,
+              0,
+              "回复留言成功！",
+              result
+            );
+          })
+          .catch (err => {
+            throw err;
+          })
+        })
+        .catch(usererror => {
+          console.error('usererror :', usererror);
+          responseClient(res);
+        })
+    })
+    .catch(CommentError => {
+      console.error('CommentError :', CommentError);
+      responseClient(res);
+    })
+}
 
 // 删除
 exports.delMessage = (req, res) => {
@@ -157,42 +227,6 @@ exports.delMessage = (req, res) => {
     })
     .catch(err => {
       console.error("err :", err);
-      responseClient(res);
-    });
-};
-
-// 回复留言
-exports.addReplyMessage = (req, res) => {
-  if (!req.session.userInfo) {
-    responseClient(res, 200, 1, "您还没登录,或者登录信息已过期，请重新登录！");
-    return;
-  }
-
-  let { id, state, content } = req.body;
-
-  Message.findById({
-    _id: id
-  })
-    .then(result => {
-      const list = [...result.reply_list, ...{ content: content }];
-
-      Message.update(
-        { _id: id },
-        {
-          state: parseInt(state),
-          reply_list: list
-        }
-      )
-        .then(data => {
-          responseClient(res, 200, 0, "操作成功", data);
-        })
-        .catch(err1 => {
-          console.error("err1:", err1);
-          responseClient(res);
-        });
-    })
-    .catch(error2 => {
-      console.error("error2 :", error2);
       responseClient(res);
     });
 };
