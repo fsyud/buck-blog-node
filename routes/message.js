@@ -67,7 +67,9 @@ exports.queryMessageList = (req, res) => {
         email: 1,
         state: 1,
         other_comments: 1,
-        create_time: 1
+        create_time: 1,
+        type: 1,
+        user: 1,
         // update_time: 1,
       };
       let options = {
@@ -111,7 +113,8 @@ exports.addMessage = (req, res) => {
             introduce: result.introduce,
             content: content,
             email: email ? email : result.email,
-            state: 0
+            state: 0,
+            type: result.type
           });
 
           message
@@ -132,11 +135,11 @@ exports.addMessage = (req, res) => {
   } else {
     // 直接保存留言内容
     let message = new Message({
-      name: name,
+      name: name ? name : '访客' + Math.ceil(Math.random()*1000000),
       phone: phone,
       content: content,
       email: email,
-      state: 0
+      state: 0,
     });
     message
       .save()
@@ -158,6 +161,11 @@ exports.addThirdMessage = (req, res) => {
     content,
     to_user
   } = req.body;
+
+  if(!user_id) {
+    responseClient(res, 200, 0, "您还没登录,或者登录信息已过期，请重新登录！");
+    return;
+  }
 
   Message.findById({_id: comment_id})
     .then(commentResult => {
@@ -230,3 +238,57 @@ exports.delMessage = (req, res) => {
       responseClient(res);
     });
 };
+
+
+// 管理一级留言
+exports.changeMessage = (req, res) => {
+  let { id, state } = req.body;
+  console.log(state)
+  Message.updateOne(
+    { _id: id },
+    {
+      state: Number(state),
+    },
+  )
+    .then(result => {
+      responseClient(res, 200, 0, '操作成功', result);
+    })
+    .catch(err => {
+      console.error('err:', err);
+      responseClient(res);
+    });
+};
+
+// 管理三级留言
+exports.changeThirdMessage = (req, res) => {
+  let { id, state, index } = req.body;
+  Message.findById({
+    _id: id,
+  })
+    .then(commentResult => {
+      let i = index ? Number(index) : 0;
+      if (commentResult.other_comments.length) {
+        commentResult.other_comments[i].state = Number(state);
+        Message.updateOne(
+          { _id: id },
+          {
+            other_comments: commentResult.other_comments,
+          },
+        )
+          .then(result => {
+            responseClient(res, 200, 0, '操作成功', result);
+          })
+          .catch(err1 => {
+            console.error('err1:', err1);
+            responseClient(res);
+          });
+      } else {
+        responseClient(res, 200, 1, '访客留言不存在！', result);
+      }
+    })
+    .catch(error2 => {
+      console.log('error2 :', error2);
+      responseClient(res);
+    });
+};
+

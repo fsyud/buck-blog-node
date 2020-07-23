@@ -61,4 +61,6 @@ module.exports = app => {
   app.post('/addThirdMessage', message.addThirdMessage)
   app.get('/queryMessageList', message.queryMessageList)
   app.post('/delMessage', message.delMessage)
+  app.post('/changeMessage', message.changeMessage)
+  app.post('/changeThirdMessage', message.changeThirdMessage)
 }

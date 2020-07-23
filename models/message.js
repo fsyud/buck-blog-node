@@ -9,6 +9,20 @@ const autoIncrement = require("mongoose-auto-increment");
 
 // 留言模型
 const messageSchema = new mongoose.Schema({
+  // 父评论的用户信息
+  user: {
+    // 用户id
+    user_id: { type: String, default: "" },
+
+    // 姓名
+  	name: { type: String, default: "" },
+
+    // 用户类型 0：博主 1：其他用户
+    type: { type: Number, default: 1 },
+
+    // 头像
+    avatar: { type: String, default: "user" }
+  },
   // 用户 id
   user_id: { type: String, default: "" },
 
@@ -38,6 +52,9 @@ const messageSchema = new mongoose.Schema({
 
   // 最后修改日期
   update_time: { type: Date, default: Date.now },
+
+  // 用户类型 0：博主 1：其他用户
+  type: { type: Number, default: 1 },
 
   // 第三者评论
   other_comments: [
@@ -73,7 +90,7 @@ const messageSchema = new mongoose.Schema({
       content: { type: String, required: true, validate: /\S+/ },
 
       // 状态 => 0 待审核 / 1 通过正常 / -1 已删除 / -2 垃圾评论
-      state: { type: Number, default: 1 },
+      state: { type: Number, default: 0 },
 
       // 创建日期
       create_time: { type: Date, default: Date.now }
